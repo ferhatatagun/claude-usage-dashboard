@@ -4,7 +4,19 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-type ActionResult = { error: string } | { error: null };
+type ActionResult =
+  | { error: string; warning?: undefined }
+  | { error: null; warning?: string };
+
+/** Davet ve giriş bağlantılarının döneceği mutlak adres. */
+function siteUrl() {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000")
+  );
+}
 
 export async function createOrganization(
   formData: FormData
@@ -90,11 +102,35 @@ export async function inviteMember(formData: FormData): Promise<ActionResult> {
     { onConflict: "org_id,email" }
   );
   if (error) {
-    return { error: "Davet gönderilemedi." };
+    return { error: "Davet kaydedilemedi." };
   }
 
   revalidatePath("/dashboard");
-  return { error: null };
+
+  // Davet satırı yazıldı; şimdi e-postayı gönder. Gönderim başarısız olsa da
+  // davet geçerli kalır, bu yüzden hatayı uyarı olarak döndürürüz.
+  const redirectTo = `${siteUrl()}/dashboard`;
+
+  const { error: inviteMailError } = await admin.auth.admin.inviteUserByEmail(
+    email,
+    { redirectTo }
+  );
+
+  if (!inviteMailError) return { error: null };
+
+  // Adres zaten kayıtlıysa davet maili gönderilemez; bunun yerine giriş
+  // bağlantısı yollarız, kullanıcı giriş yapınca daveti panelde görür.
+  const { error: otpError } = await admin.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: redirectTo },
+  });
+
+  if (!otpError) return { error: null };
+
+  return {
+    error: null,
+    warning: `Davet kaydedildi ama e-posta gönderilemedi: ${otpError.message}`,
+  };
 }
 
 export async function revokeInvite(inviteId: string): Promise<ActionResult> {

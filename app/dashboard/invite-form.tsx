@@ -29,7 +29,8 @@ export function InviteForm({ orgId }: { orgId: string }) {
           if (result.error) {
             setError(result.error);
           } else {
-            toast.success("Davet gönderildi.");
+            if (result.warning) toast.warning(result.warning);
+            else toast.success("Davet gönderildi, e-posta yolda.");
             formRef.current?.reset();
           }
         });
