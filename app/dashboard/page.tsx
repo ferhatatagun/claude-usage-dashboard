@@ -6,6 +6,7 @@ import { signOut } from "@/lib/actions/auth";
 import { CreateOrgForm } from "./create-org-form";
 import { InviteForm } from "./invite-form";
 import { AcceptInviteButton, RevokeInviteButton } from "./invite-actions";
+import { ApiKeyCard, type ApiKeyRow } from "./api-key-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -161,6 +162,17 @@ export default async function DashboardPage() {
         .eq("status", "pending")
     : { data: null };
 
+  // Sadece iptal edilmemiş anahtarlar. Tam anahtar burada okunmaz; yalnızca
+  // son 4 haneyi tutan onizleme ve kullanim tarihleri gelir.
+  const { data: apiKeys } = isAdmin
+    ? await admin
+        .from("api_keys")
+        .select("id, key_preview, created_at, last_used_at")
+        .eq("org_id", org!.id)
+        .eq("key_type", "admin_usage_cost")
+        .is("revoked_at", null)
+    : { data: null };
+
   return (
     <DashboardShell email={user.email!}>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -179,6 +191,10 @@ export default async function DashboardPage() {
           yükleyin.
         </CardContent>
       </Card>
+
+      {isAdmin && (
+        <ApiKeyCard orgId={org!.id} keys={(apiKeys ?? []) as ApiKeyRow[]} />
+      )}
 
       <Card>
         <CardHeader>
