@@ -7,6 +7,11 @@ import { CreateOrgForm } from "./create-org-form";
 import { InviteForm } from "./invite-form";
 import { AcceptInviteButton, RevokeInviteButton } from "./invite-actions";
 import { ApiKeyCard, type ApiKeyRow } from "./api-key-card";
+import {
+  UsageSummary,
+  type CostDailyRow,
+  type UsageDailyRow,
+} from "./usage-summary";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -173,6 +178,22 @@ export default async function DashboardPage() {
         .is("revoked_at", null)
     : { data: null };
 
+  // Kullanim ve maliyet satirlari RLS ile korunur; uye olan herkes kendi
+  // organizasyonunun verisini gorur.
+  const [{ data: usageDaily }, { data: costDaily }] = await Promise.all([
+    supabase
+      .from("usage_daily")
+      .select(
+        "usage_date, model, uncached_input_tokens, cache_read_input_tokens, cache_creation_input_tokens, output_tokens"
+      )
+      .eq("org_id", org!.id)
+      .order("usage_date", { ascending: true }),
+    supabase
+      .from("cost_daily")
+      .select("usage_date, amount_cents")
+      .eq("org_id", org!.id),
+  ]);
+
   return (
     <DashboardShell email={user.email!}>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -185,12 +206,10 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <Card className="border-dashed">
-        <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          Kullanım verisi henüz yok. Admin API anahtarınızı bağlayın veya CSV
-          yükleyin.
-        </CardContent>
-      </Card>
+      <UsageSummary
+        usage={(usageDaily ?? []) as UsageDailyRow[]}
+        cost={(costDaily ?? []) as CostDailyRow[]}
+      />
 
       {isAdmin && (
         <ApiKeyCard orgId={org!.id} keys={(apiKeys ?? []) as ApiKeyRow[]} />

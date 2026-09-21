@@ -10,11 +10,12 @@ type ActionResult =
   | { error: null; organizationName?: string | null };
 
 /**
- * Anahtarın sadece son 4 hanesini saklarız — kullanıcı panelde hangi anahtarı
- * bağladığını tanısın diye. Tam anahtar veritabanına asla düz metin yazılmaz.
+ * Anahtarın sadece baştaki tanıtıcı kısmı ile son 4 hanesini saklarız —
+ * kullanıcı panelde hangi anahtarı bağladığını tanısın diye. Tam anahtar
+ * veritabanına asla düz metin yazılmaz.
  */
 function previewOf(secret: string) {
-  return `…${secret.slice(-4)}`;
+  return `${secret.slice(0, 12)}…${secret.slice(-4)}`;
 }
 
 /** Çağıranın ilgili organizasyonun admini olduğunu doğrular. */
@@ -43,14 +44,11 @@ export async function saveApiKey(formData: FormData): Promise<ActionResult> {
   const orgId = String(formData.get("orgId") ?? "");
   const secret = String(formData.get("secret") ?? "").trim();
 
-  if (!secret) {
-    return { error: "Anahtar boş olamaz." };
-  }
-  if (!secret.startsWith("sk-ant-admin")) {
-    return {
-      error:
-        "Bu bir Admin API anahtarı değil. Anahtar sk-ant-admin ile başlamalı.",
-    };
+  // Biçim üzerinden eleme yapmıyoruz: kullanım/maliyet uçları Admin anahtarını
+  // da, org:admin kapsamlı bir token'ı da, workspace'e bağlı olmayan bir servis
+  // hesabı anahtarını da kabul ediyor. Kararı aşağıdaki canlı doğrulama verir.
+  if (secret.length < 20) {
+    return { error: "Anahtar eksik görünüyor. Tamamını yapıştırdığınızdan emin olun." };
   }
 
   const auth = await requireOrgAdmin(orgId);

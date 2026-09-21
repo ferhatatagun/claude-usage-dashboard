@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { KeyRound, ShieldCheck, Trash2 } from "lucide-react";
+import { KeyRound, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { revokeApiKey, saveApiKey } from "@/lib/actions/api-keys";
+import { syncUsage } from "@/lib/actions/usage-sync";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,8 +50,9 @@ function SecurityNote() {
             şifrelenir; şifreleme anahtarı veritabanının dışında tutulur.
           </li>
           <li>
-            Tabloda sadece son 4 hane ve şifreli kaydın kimliği durur. Anahtarın
-            kendisi hiçbir zaman tarayıcıya geri gönderilmez.
+            Tabloda sadece anahtarın baştaki tanıtıcı kısmı, son 4 hanesi ve
+            şifreli kaydın kimliği durur. Anahtarın kendisi hiçbir zaman
+            tarayıcıya geri gönderilmez.
           </li>
           <li>
             Çözme yetkisi yalnızca sunucu tarafındaki gizli anahtara verilmiştir.
@@ -86,6 +88,7 @@ export function ApiKeyCard({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const activeKey = keys[0] ?? null;
 
@@ -108,7 +111,7 @@ export function ApiKeyCard({
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2.5">
                 <span className="font-mono text-sm">
-                  sk-ant-admin{activeKey.key_preview}
+                  {activeKey.key_preview}
                 </span>
                 <Badge variant="secondary">Bağlı</Badge>
               </div>
@@ -117,6 +120,27 @@ export function ApiKeyCard({
                 kullanım: {formatDate(activeKey.last_used_at)}
               </span>
             </div>
+            <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isSyncing}
+              onClick={() => {
+                setIsSyncing(true);
+                startTransition(async () => {
+                  const result = await syncUsage(orgId);
+                  setIsSyncing(false);
+                  if (result.error) toast.error(result.error);
+                  else if (result.days === 0)
+                    toast.info("Anthropic bu dönem için kayıt döndürmedi.");
+                  else
+                    toast.success(`${result.days} günlük veri güncellendi.`);
+                });
+              }}
+            >
+              <RefreshCw />
+              {isSyncing ? "Çekiliyor..." : "Veriyi yenile"}
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -135,6 +159,7 @@ export function ApiKeyCard({
               <Trash2 />
               {revokingId === activeKey.id ? "Siliniyor..." : "Sil"}
             </Button>
+            </div>
           </div>
         ) : (
           <form
