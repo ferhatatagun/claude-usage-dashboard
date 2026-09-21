@@ -1,9 +1,59 @@
 import { redirect } from "next/navigation";
+import { Building2, LogOut, Mail, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { signOut } from "@/lib/actions/auth";
 import { CreateOrgForm } from "./create-org-form";
 import { InviteForm } from "./invite-form";
 import { AcceptInviteButton, RevokeInviteButton } from "./invite-actions";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+function DashboardShell({
+  email,
+  children,
+}: {
+  email: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-1 flex-col">
+      <header className="border-b border-border/60">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
+          <span className="font-heading text-xl tracking-tight">
+            Claude Usage Dashboard
+          </span>
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm text-muted-foreground sm:inline">
+              {email}
+            </span>
+            <form action={signOut}>
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+              >
+                <LogOut />
+                Çıkış
+              </Button>
+            </form>
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-10">
+        {children}
+      </main>
+    </div>
+  );
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -27,48 +77,57 @@ export default async function DashboardPage() {
       .eq("status", "pending");
 
     return (
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-12">
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Dashboard
-        </h1>
-
+      <DashboardShell email={user.email!}>
         {pendingInvites && pendingInvites.length > 0 && (
-          <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-              Bekleyen davetleriniz
-            </h2>
-            {pendingInvites.map((invite) => {
-              const org = Array.isArray(invite.organizations)
-                ? invite.organizations[0]
-                : invite.organizations;
-              return (
-                <div
-                  key={invite.id}
-                  className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 text-sm dark:border-zinc-800"
-                >
-                  <span className="text-zinc-700 dark:text-zinc-300">
-                    {org?.name ?? "Organizasyon"} — {invite.role === "admin" ? "Admin" : "Üye"} olarak davet edildiniz
-                  </span>
-                  <AcceptInviteButton inviteId={invite.id} />
-                </div>
-              );
-            })}
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Mail className="size-4 text-primary" />
+                Bekleyen davetleriniz
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              {pendingInvites.map((invite) => {
+                const org = Array.isArray(invite.organizations)
+                  ? invite.organizations[0]
+                  : invite.organizations;
+                return (
+                  <div
+                    key={invite.id}
+                    className="flex items-center justify-between gap-4 rounded-lg border border-border px-4 py-3"
+                  >
+                    <div className="flex items-center gap-2.5 text-sm">
+                      <span className="font-medium">
+                        {org?.name ?? "Organizasyon"}
+                      </span>
+                      <Badge variant="secondary">
+                        {invite.role === "admin" ? "Admin" : "Üye"}
+                      </Badge>
+                    </div>
+                    <AcceptInviteButton inviteId={invite.id} />
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
         )}
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-950">
-          <div>
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Building2 className="size-4 text-primary" />
               Yeni organizasyon oluştur
-            </h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            </CardTitle>
+            <CardDescription>
               Henüz bir organizasyona bağlı değilsiniz. Kendi organizasyonunuzu
               oluşturarak başlayabilir veya bir davet bekleyebilirsiniz.
-            </p>
-          </div>
-          <CreateOrgForm />
-        </div>
-      </div>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CreateOrgForm />
+          </CardContent>
+        </Card>
+      </DashboardShell>
     );
   }
 
@@ -97,81 +156,93 @@ export default async function DashboardPage() {
   const { data: invites } = isAdmin
     ? await admin
         .from("organization_invites")
-        .select("id, email, role, status")
+        .select("id, email, role")
         .eq("org_id", org!.id)
         .eq("status", "pending")
     : { data: null };
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-12">
-      <div>
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          {org?.name}
-        </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Plan: {org?.plan_type === "enterprise" ? "Enterprise" : "Team"} · Rolünüz:{" "}
-          {isAdmin ? "Admin" : "Üye"}
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
-        Kullanım verisi henüz yok. Admin API anahtarınızı bağlayın veya CSV
-        yükleyin.
-      </div>
-
-      <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-950">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          Ekip üyeleri
-        </h2>
-        <div className="flex flex-col gap-2">
-          {members?.map((m) => (
-            <div
-              key={m.id}
-              className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-2.5 text-sm dark:border-zinc-800"
-            >
-              <span className="text-zinc-700 dark:text-zinc-300">
-                {memberEmails.get(m.user_id) ?? m.user_id}
-              </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-500">
-                {m.role === "admin" ? "Admin" : "Üye"}
-              </span>
-            </div>
-          ))}
+    <DashboardShell email={user.email!}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="font-heading text-3xl tracking-tight">{org?.name}</h1>
+          <p className="text-sm text-muted-foreground">
+            {org?.plan_type === "enterprise" ? "Enterprise" : "Team"} planı ·
+            Rolünüz: {isAdmin ? "Admin" : "Üye"}
+          </p>
         </div>
+      </div>
 
-        {isAdmin && (
-          <>
-            {invites && invites.length > 0 && (
-              <div className="flex flex-col gap-2 pt-2">
-                <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-500">
-                  Bekleyen davetler
-                </h3>
-                {invites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="flex items-center justify-between rounded-lg border border-dashed border-zinc-300 px-4 py-2.5 text-sm dark:border-zinc-700"
-                  >
-                    <span className="text-zinc-700 dark:text-zinc-300">
-                      {invite.email}{" "}
-                      <span className="text-xs text-zinc-500">
-                        ({invite.role === "admin" ? "Admin" : "Üye"})
-                      </span>
-                    </span>
-                    <RevokeInviteButton inviteId={invite.id} />
-                  </div>
-                ))}
+      <Card className="border-dashed">
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          Kullanım verisi henüz yok. Admin API anahtarınızı bağlayın veya CSV
+          yükleyin.
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Users className="size-4 text-primary" />
+            Ekip üyeleri
+          </CardTitle>
+          <CardDescription>
+            {members?.length ?? 0} üye
+            {invites && invites.length > 0
+              ? ` · ${invites.length} bekleyen davet`
+              : ""}
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="flex flex-col gap-6">
+          <div className="flex flex-col divide-y divide-border">
+            {members?.map((m) => (
+              <div
+                key={m.id}
+                className="flex items-center justify-between gap-4 py-3 first:pt-0 text-sm"
+              >
+                <span>{memberEmails.get(m.user_id) ?? m.user_id}</span>
+                <Badge variant={m.role === "admin" ? "default" : "secondary"}>
+                  {m.role === "admin" ? "Admin" : "Üye"}
+                </Badge>
               </div>
-            )}
+            ))}
+          </div>
 
-            <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-              <h3 className="mb-3 text-xs font-semibold text-zinc-500 dark:text-zinc-500">
+          {isAdmin && invites && invites.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                Bekleyen davetler
+              </h3>
+              {invites.map((invite) => (
+                <div
+                  key={invite.id}
+                  className="flex items-center justify-between gap-4 rounded-lg border border-dashed border-border px-4 py-2.5 text-sm"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-muted-foreground">
+                      {invite.email}
+                    </span>
+                    <Badge variant="outline">
+                      {invite.role === "admin" ? "Admin" : "Üye"}
+                    </Badge>
+                  </div>
+                  <RevokeInviteButton inviteId={invite.id} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="flex flex-col gap-3 border-t border-border pt-6">
+              <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 Yeni üye davet et
               </h3>
               <InviteForm orgId={org!.id} />
             </div>
-          </>
-        )}
-      </div>
-    </div>
+          )}
+        </CardContent>
+      </Card>
+    </DashboardShell>
   );
 }

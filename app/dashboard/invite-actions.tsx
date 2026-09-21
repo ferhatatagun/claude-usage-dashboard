@@ -1,38 +1,47 @@
 "use client";
 
 import { useTransition } from "react";
+import { toast } from "sonner";
 import { acceptInvite, revokeInvite } from "@/lib/actions/organizations";
+import { Button } from "@/components/ui/button";
 
 export function AcceptInviteButton({ inviteId }: { inviteId: string }) {
   const [isPending, startTransition] = useTransition();
+
   return (
-    <button
+    <Button
+      size="sm"
+      disabled={isPending}
       onClick={() =>
         startTransition(async () => {
-          await acceptInvite(inviteId);
+          const result = await acceptInvite(inviteId);
+          if (result.error) toast.error(result.error);
         })
       }
-      disabled={isPending}
-      className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
     >
       {isPending ? "Katılıyor..." : "Katıl"}
-    </button>
+    </Button>
   );
 }
 
 export function RevokeInviteButton({ inviteId }: { inviteId: string }) {
   const [isPending, startTransition] = useTransition();
+
   return (
-    <button
+    <Button
+      size="sm"
+      variant="ghost"
+      className="text-muted-foreground"
+      disabled={isPending}
       onClick={() =>
         startTransition(async () => {
-          await revokeInvite(inviteId);
+          const result = await revokeInvite(inviteId);
+          if (result.error) toast.error(result.error);
+          else toast.success("Davet iptal edildi.");
         })
       }
-      disabled={isPending}
-      className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300"
     >
       {isPending ? "İptal ediliyor..." : "İptal et"}
-    </button>
+    </Button>
   );
 }

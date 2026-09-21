@@ -1,58 +1,74 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { inviteMember } from "@/lib/actions/organizations";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function InviteForm({ orgId }: { orgId: string }) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   return (
     <form
+      ref={formRef}
       action={(formData) => {
         setError(null);
         startTransition(async () => {
           const result = await inviteMember(formData);
-          if (result.error) setError(result.error);
+          if (result.error) {
+            setError(result.error);
+          } else {
+            toast.success("Davet gönderildi.");
+            formRef.current?.reset();
+          }
         });
       }}
-      className="flex flex-wrap items-end gap-3"
+      className="flex flex-col gap-3"
     >
       <input type="hidden" name="orgId" value={orgId} />
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-          E-posta
-        </label>
-        <input
-          name="email"
-          type="email"
-          required
-          placeholder="ekip.arkadasi@sirket.com"
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-        />
+
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex min-w-56 flex-1 flex-col gap-2">
+          <Label htmlFor="invite-email">E-posta</Label>
+          <Input
+            id="invite-email"
+            name="email"
+            type="email"
+            required
+            placeholder="ekip.arkadasi@sirket.com"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="invite-role">Rol</Label>
+          <Select name="role" defaultValue="member">
+            <SelectTrigger id="invite-role" className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="member">Üye</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Gönderiliyor..." : "Davet gönder"}
+        </Button>
       </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-          Rol
-        </label>
-        <select
-          name="role"
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-        >
-          <option value="member">Üye</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-      >
-        {isPending ? "Gönderiliyor..." : "Davet gönder"}
-      </button>
-      {error && (
-        <p className="w-full text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </form>
   );
 }
