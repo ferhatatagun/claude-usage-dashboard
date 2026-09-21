@@ -1,12 +1,20 @@
 import "server-only";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-// service_role client — bypasses RLS. Only ever import this from API routes,
-// route handlers, or cron jobs. Never from a Server/Client Component.
+// Gizli anahtarlı istemci — RLS'i bypass eder. Sadece Server Action'lardan,
+// route handler'lardan veya cron job'lardan çağrılmalı. Client Component'ten asla.
 export function createAdminClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+
+  if (!url || !secretKey) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL ve SUPABASE_SECRET_KEY .env.local içinde tanımlı olmalı. " +
+        "Anahtarları https://supabase.com/dashboard/project/_/settings/api-keys adresinden alın."
+    );
+  }
+
+  return createSupabaseClient(url, secretKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 }

@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# mail şablonu önizlemesi (geçici)
+public/__mailpreview/
+
+# örnek env dosyası paylaşılabilir (gerçek değer içermez)
+!.env.example
