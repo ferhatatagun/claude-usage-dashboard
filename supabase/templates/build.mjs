@@ -137,6 +137,7 @@ const NOT_YOU = "Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz
 const templates = {
   "confirm-signup": {
     tab: "Confirm signup",
+    subject: "E-posta adresinizi doğrulayın",
     preheader: `${BRAND} hesabınızı doğrulayın.`,
     heading: "E-posta adresinizi doğrulayın",
     intro: `<strong style="color:${c.heading};">{{ .Email }}</strong> adresiyle ${BRAND} hesabı oluşturuldu. Kaydı tamamlamak için adresinizi doğrulayın.`,
@@ -147,6 +148,7 @@ const templates = {
 
   "magic-link": {
     tab: "Magic Link",
+    subject: "Giriş bağlantınız",
     preheader: `${BRAND} giriş bağlantınız.`,
     heading: "Giriş bağlantınız hazır",
     intro: `<strong style="color:${c.heading};">{{ .Email }}</strong> için giriş bağlantısı istendi. Şifre gerekmez — aşağıdaki butona dokunmanız yeterli.`,
@@ -157,6 +159,7 @@ const templates = {
 
   invite: {
     tab: "Invite user",
+    subject: "Bir ekibe davet edildiniz",
     preheader: `${BRAND} üzerinde bir ekibe davet edildiniz.`,
     heading: "Ekibe davet edildiniz",
     intro: `<strong style="color:${c.heading};">{{ .Email }}</strong> adresi ${BRAND} üzerinde bir ekibe davet edildi. Daveti kabul ederek ekibin Claude token kullanımını gün gün görebilirsiniz.`,
@@ -167,6 +170,7 @@ const templates = {
 
   "reset-password": {
     tab: "Reset Password",
+    subject: "Şifrenizi sıfırlayın",
     preheader: `${BRAND} şifre sıfırlama isteği.`,
     heading: "Şifrenizi sıfırlayın",
     intro: `<strong style="color:${c.heading};">{{ .Email }}</strong> için şifre sıfırlama isteği aldık. Yeni bir şifre belirlemek için devam edin.`,
@@ -177,6 +181,7 @@ const templates = {
 
   "change-email": {
     tab: "Change Email Address",
+    subject: "E-posta değişikliğini onaylayın",
     preheader: `${BRAND} e-posta değişikliğini onaylayın.`,
     heading: "E-posta değişikliğini onaylayın",
     intro: `Hesabınızın e-posta adresi <strong style="color:${c.heading};">{{ .Email }}</strong> adresinden <strong style="color:${c.heading};">{{ .NewEmail }}</strong> adresine taşınmak isteniyor. Onaylamak için devam edin.`,
@@ -187,6 +192,7 @@ const templates = {
 
   reauthentication: {
     tab: "Reauthentication",
+    subject: "Doğrulama kodunuz",
     preheader: `${BRAND} doğrulama kodunuz.`,
     heading: "Doğrulama kodunuz",
     intro: `İşleme devam etmek için aşağıdaki kodu uygulamaya girin.`,
@@ -204,4 +210,33 @@ for (const [name, t] of Object.entries(templates)) {
   console.log(`${name}.html  →  Dashboard sekmesi: "${t.tab}"`);
 }
 
+// Konu satırları da Türkçeleştirilmeli; Supabase bunları şablondan okumaz,
+// her sekmenin kendi "Subject heading" alanına ayrıca yazılır. Elle takip
+// edilmesin diye kurulum notunu da burada üretiyoruz.
+const readme = `# Supabase e-posta şablonları
+
+Bu klasördeki dosyalar \`node supabase/templates/build.mjs\` ile üretilir.
+Elle düzenlemeyin; kaynak \`../build.mjs\` dosyasıdır.
+
+Kurulum: Supabase Dashboard → Authentication → Emails → Templates.
+Her sekme için konu satırını yazın, gövdeye ilgili HTML dosyasının tamamını
+yapıştırın ve kaydedin.
+
+| Dashboard sekmesi | Subject heading | Dosya |
+| --- | --- | --- |
+${Object.entries(templates)
+  .map(([name, t]) => `| ${t.tab} | ${t.subject} | \`${name}.html\` |`)
+  .join("\n")}
+
+Şablonlar Go değişkenleri kullanır (\`{{ .ConfirmationURL }}\`, \`{{ .Email }}\`,
+\`{{ .Token }}\`). Supabase bunları gönderim anında doldurur.
+
+Bağlantıların doğru adrese dönmesi için aynı ekranda
+Authentication → URL Configuration altında Site URL üretim adresiniz olmalı ve
+Redirect URLs listesinde hem üretim hem yerel adres bulunmalıdır.
+`;
+
+writeFileSync(join(outDir, "README.md"), readme, "utf8");
+
 console.log(`\n${Object.keys(templates).length} şablon üretildi: ${outDir}`);
+console.log(`Kurulum notu: ${join(outDir, "README.md")}`);

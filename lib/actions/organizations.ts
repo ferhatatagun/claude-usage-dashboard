@@ -3,20 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { callbackUrl } from "@/lib/site-url";
 
 type ActionResult =
   | { error: string; warning?: undefined }
   | { error: null; warning?: string };
-
-/** Davet ve giriş bağlantılarının döneceği mutlak adres. */
-function siteUrl() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "http://localhost:3000")
-  );
-}
 
 export async function createOrganization(
   formData: FormData
@@ -109,7 +100,7 @@ export async function inviteMember(formData: FormData): Promise<ActionResult> {
 
   // Davet satırı yazıldı; şimdi e-postayı gönder. Gönderim başarısız olsa da
   // davet geçerli kalır, bu yüzden hatayı uyarı olarak döndürürüz.
-  const redirectTo = `${siteUrl()}/dashboard`;
+  const redirectTo = callbackUrl("/dashboard");
 
   const { error: inviteMailError } = await admin.auth.admin.inviteUserByEmail(
     email,

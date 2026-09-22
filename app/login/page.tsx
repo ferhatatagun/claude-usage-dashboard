@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function LoginPage() {
+/**
+ * `/auth/callback` başarısız bir giriş denemesini bu sayfaya `?hata=` ile
+ * geri gönderir. Kullanıcı aksi hâlde sebebini göremeden giriş ekranına
+ * düşerdi.
+ */
+const CALLBACK_ERRORS: Record<string, string> = {
+  expired:
+    "Bağlantının süresi dolmuş veya daha önce kullanılmış. Yeni bir bağlantı isteyin.",
+  invalid:
+    "Bağlantı doğrulanamadı. Aynı tarayıcıdan açtığınızdan emin olup tekrar deneyin.",
+  missing: "Giriş bağlantısı eksik görünüyor. Yeni bir bağlantı isteyin.",
+};
+
+function CallbackError() {
+  const reason = useSearchParams().get("hata");
+  const message = reason ? CALLBACK_ERRORS[reason] : null;
+  if (!message) return null;
+  return (
+    <p className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+      {message}
+    </p>
+  );
+}
+
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +78,10 @@ export default function LoginPage() {
             Ana sayfa
           </Link>
         </Button>
+
+        <Suspense fallback={null}>
+          <CallbackError />
+        </Suspense>
 
         <Card>
           {status === "sent" ? (
@@ -118,4 +147,8 @@ export default function LoginPage() {
       </div>
     </div>
   );
+}
+
+export default function LoginPage() {
+  return <LoginForm />;
 }
