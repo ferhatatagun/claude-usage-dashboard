@@ -12,6 +12,8 @@ import {
   type CostDailyRow,
   type UsageDailyRow,
 } from "./usage-summary";
+import { MemberUsage, type UsageRecordRow } from "./member-usage";
+import { CsvUploadCard } from "./csv-upload-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -180,19 +182,27 @@ export default async function DashboardPage() {
 
   // Kullanim ve maliyet satirlari RLS ile korunur; uye olan herkes kendi
   // organizasyonunun verisini gorur.
-  const [{ data: usageDaily }, { data: costDaily }] = await Promise.all([
-    supabase
-      .from("usage_daily")
-      .select(
-        "usage_date, model, uncached_input_tokens, cache_read_input_tokens, cache_creation_input_tokens, output_tokens"
-      )
-      .eq("org_id", org!.id)
-      .order("usage_date", { ascending: true }),
-    supabase
-      .from("cost_daily")
-      .select("usage_date, amount_cents")
-      .eq("org_id", org!.id),
-  ]);
+  const [{ data: usageDaily }, { data: costDaily }, { data: usageRecords }] =
+    await Promise.all([
+      supabase
+        .from("usage_daily")
+        .select(
+          "usage_date, model, uncached_input_tokens, cache_read_input_tokens, cache_creation_input_tokens, output_tokens"
+        )
+        .eq("org_id", org!.id)
+        .order("usage_date", { ascending: true }),
+      supabase
+        .from("cost_daily")
+        .select("usage_date, amount_cents")
+        .eq("org_id", org!.id),
+      supabase
+        .from("usage_records")
+        .select(
+          "user_email, model, input_tokens, output_tokens, cost_usd, usage_date"
+        )
+        .eq("org_id", org!.id)
+        .order("usage_date", { ascending: true }),
+    ]);
 
   return (
     <DashboardShell email={user.email!}>
@@ -211,9 +221,13 @@ export default async function DashboardPage() {
         cost={(costDaily ?? []) as CostDailyRow[]}
       />
 
+      <MemberUsage records={(usageRecords ?? []) as UsageRecordRow[]} />
+
       {isAdmin && (
         <ApiKeyCard orgId={org!.id} keys={(apiKeys ?? []) as ApiKeyRow[]} />
       )}
+
+      {isAdmin && <CsvUploadCard orgId={org!.id} />}
 
       <Card>
         <CardHeader>
