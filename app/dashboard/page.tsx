@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
-import { Building2, LogOut, Mail, Users } from "lucide-react";
+import Link from "next/link";
+import { Building2, LogOut, Mail, ShieldCheck, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isPlatformAdmin } from "@/lib/platform-admin";
 import { signOut } from "@/lib/actions/auth";
 import { CreateOrgForm } from "./create-org-form";
 import { InviteForm } from "./invite-form";
@@ -26,9 +28,11 @@ import {
 
 function DashboardShell({
   email,
+  platformAdmin,
   children,
 }: {
   email: string;
+  platformAdmin: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -42,6 +46,14 @@ function DashboardShell({
             <span className="hidden text-sm text-muted-foreground sm:inline">
               {email}
             </span>
+            {platformAdmin && (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/admin">
+                  <ShieldCheck />
+                  Platform paneli
+                </Link>
+              </Button>
+            )}
             <form action={signOut}>
               <Button
                 type="submit"
@@ -71,6 +83,8 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
+  const platformAdmin = await isPlatformAdmin();
+
   const { data: membership } = await supabase
     .from("organization_members")
     .select("role, organizations(id, name, plan_type)")
@@ -85,7 +99,7 @@ export default async function DashboardPage() {
       .eq("status", "pending");
 
     return (
-      <DashboardShell email={user.email!}>
+      <DashboardShell email={user.email!} platformAdmin={platformAdmin}>
         {pendingInvites && pendingInvites.length > 0 && (
           <Card>
             <CardHeader>
@@ -208,7 +222,7 @@ export default async function DashboardPage() {
     ]);
 
   return (
-    <DashboardShell email={user.email!}>
+    <DashboardShell email={user.email!} platformAdmin={platformAdmin}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="font-heading text-3xl tracking-tight">{org?.name}</h1>
