@@ -180,8 +180,9 @@ export default async function DashboardPage() {
         .is("revoked_at", null)
     : { data: null };
 
-  // Kullanim ve maliyet satirlari RLS ile korunur; uye olan herkes kendi
-  // organizasyonunun verisini gorur.
+  // Toplam kullanim ve maliyet tum uyelere aciktir. Kisi bazindaki satirlar
+  // is arkadaslarinin e-postasini ve harcamasini tasidigi icin yalnizca
+  // adminlere gosterilir; siniri RLS de ayrica zorunlu kilar.
   const [{ data: usageDaily }, { data: costDaily }, { data: usageRecords }] =
     await Promise.all([
       supabase
@@ -195,13 +196,15 @@ export default async function DashboardPage() {
         .from("cost_daily")
         .select("usage_date, amount_cents")
         .eq("org_id", org!.id),
-      supabase
-        .from("usage_records")
-        .select(
-          "user_email, model, input_tokens, output_tokens, cost_usd, usage_date"
-        )
-        .eq("org_id", org!.id)
-        .order("usage_date", { ascending: true }),
+      isAdmin
+        ? supabase
+            .from("usage_records")
+            .select(
+              "user_email, model, input_tokens, output_tokens, cost_usd, usage_date"
+            )
+            .eq("org_id", org!.id)
+            .order("usage_date", { ascending: true })
+        : { data: null },
     ]);
 
   return (
@@ -221,7 +224,9 @@ export default async function DashboardPage() {
         cost={(costDaily ?? []) as CostDailyRow[]}
       />
 
-      <MemberUsage records={(usageRecords ?? []) as UsageRecordRow[]} />
+      {isAdmin && (
+        <MemberUsage records={(usageRecords ?? []) as UsageRecordRow[]} />
+      )}
 
       {isAdmin && (
         <ApiKeyCard orgId={org!.id} keys={(apiKeys ?? []) as ApiKeyRow[]} />

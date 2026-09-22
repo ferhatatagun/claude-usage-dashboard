@@ -82,6 +82,7 @@ export function MemberUsage({ records }: { records: UsageRecordRow[] }) {
           {days.length > 0 &&
             ` · ${dayFormat.format(new Date(days[0]))} – ${dayFormat.format(new Date(days[days.length - 1]))}`}
           {totalCost > 0 && ` · toplam ${moneyFormat.format(totalCost)}`}
+          {" · yalnızca adminlere görünür"}
         </CardDescription>
       </CardHeader>
 
