@@ -6,6 +6,7 @@ import { inviteMember } from "@/lib/actions/organizations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import {
   Select,
   SelectContent,
@@ -41,7 +42,10 @@ export function InviteForm({ orgId }: { orgId: string }) {
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex min-w-56 flex-1 flex-col gap-2">
-          <Label htmlFor="invite-email">E-posta</Label>
+          <Label htmlFor="invite-email">
+            E-posta
+            <InfoTooltip text="Davet edeceğiniz kişinin e-posta adresi. Bu adrese, panele girmesi için tek tıkla giriş bağlantısı içeren bir davet e-postası gönderilir." />
+          </Label>
           <Input
             id="invite-email"
             name="email"
@@ -52,7 +56,10 @@ export function InviteForm({ orgId }: { orgId: string }) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="invite-role">Rol</Label>
+          <Label htmlFor="invite-role">
+            Rol
+            <InfoTooltip text="Üye: yalnızca toplam kullanım ve maliyeti görür. Admin: ayrıca kişi bazlı kullanımı görür, üye davet edebilir, API anahtarı ve CSV yükleme yapabilir." />
+          </Label>
           <Select name="role" defaultValue="member">
             <SelectTrigger id="invite-role" className="w-32">
               <SelectValue />

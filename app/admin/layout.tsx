@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, LogOut, Settings, ShieldAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { isPlatformAdmin } from "@/lib/platform-admin";
 import { signOut } from "@/lib/actions/auth";
@@ -43,6 +43,12 @@ export default async function AdminLayout({
               <Link href="/dashboard">
                 <LayoutDashboard />
                 Kendi panelim
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/settings">
+                <Settings />
+                Ayarlar
               </Link>
             </Button>
             <form action={signOut}>

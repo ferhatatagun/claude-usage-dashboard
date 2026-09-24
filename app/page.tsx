@@ -58,7 +58,7 @@ export default function Home() {
       <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
           <span className="font-heading text-xl tracking-tight">
-            Claude Usage Dashboard
+            Claude Team Usage
           </span>
           <Button asChild variant="ghost" size="sm">
             <Link href="/login">Giriş yap</Link>
@@ -135,7 +135,7 @@ export default function Home() {
 
       <footer className="border-t border-border/60">
         <div className="mx-auto w-full max-w-5xl px-6 py-8 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Claude Usage Dashboard · Anthropic ile
+          © {new Date().getFullYear()} Claude Team Usage · Anthropic ile
           bağlantılı değildir.
         </div>
       </footer>

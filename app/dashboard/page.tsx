@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Building2, LogOut, Mail, ShieldCheck, Users } from "lucide-react";
+import { Building2, LogOut, Mail, Settings, ShieldCheck, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPlatformAdmin } from "@/lib/platform-admin";
@@ -40,7 +40,7 @@ function DashboardShell({
       <header className="border-b border-border/60">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
           <span className="font-heading text-xl tracking-tight">
-            Claude Usage Dashboard
+            Claude Team Usage
           </span>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-muted-foreground sm:inline">
@@ -54,6 +54,12 @@ function DashboardShell({
                 </Link>
               </Button>
             )}
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/settings">
+                <Settings />
+                Ayarlar
+              </Link>
+            </Button>
             <form action={signOut}>
               <Button
                 type="submit"

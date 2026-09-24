@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { AlertTriangle, FileUp, Upload, X } from "lucide-react";
+import { AlertTriangle, Download, FileUp, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { importUsageCsv } from "@/lib/actions/usage-csv";
 import {
@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import {
   Card,
   CardContent,
@@ -146,8 +147,20 @@ export function CsvUploadCard({ orgId }: { orgId: string }) {
       </CardHeader>
 
       <CardContent className="flex flex-col gap-5">
+        <a
+          href="/templates/kullanim-sablonu.csv"
+          download
+          className="inline-flex w-fit items-center gap-1.5 text-xs font-medium text-primary underline-offset-4 hover:underline"
+        >
+          <Download className="size-3.5" />
+          Örnek şablonu indir
+        </a>
+
         <div className="flex flex-col gap-2">
-          <Label htmlFor="usage-csv">CSV dosyası</Label>
+          <Label htmlFor="usage-csv">
+            CSV dosyası
+            <InfoTooltip text="Yukarıdaki örnek şablonla aynı sütun düzenini kullanın: e-posta, tarih, model, girdi/çıktı token ve maliyet. Sütun sırası ve büyük/küçük harf önemli değil." />
+          </Label>
           <Input
             ref={inputRef}
             id="usage-csv"

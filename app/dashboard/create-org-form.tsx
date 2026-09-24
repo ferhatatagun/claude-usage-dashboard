@@ -6,6 +6,7 @@ import { createOrganization } from "@/lib/actions/organizations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 export function CreateOrgForm() {
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +25,10 @@ export function CreateOrgForm() {
       className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="org-name">Organizasyon adı</Label>
+        <Label htmlFor="org-name">
+          Organizasyon adı
+          <InfoTooltip text="Ekibinizin veya şirketinizin adı. Daha sonra Ayarlar'dan değiştirebilirsiniz; üyeleriniz panele girdiğinde bu adı görür." />
+        </Label>
         <Input
           id="org-name"
           name="name"

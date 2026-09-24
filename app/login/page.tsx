@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import {
   Card,
   CardContent,
@@ -118,7 +119,10 @@ function LoginForm() {
               <CardContent>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="email">E-posta</Label>
+                    <Label htmlFor="email">
+                      E-posta
+                      <InfoTooltip text="Şifre gerekmez. E-postanıza bir giriş bağlantısı yollarız, ona tıklamanız yeterli — bağlantı tek kullanımlıktır ve kısa süre sonra geçersiz olur." />
+                    </Label>
                     <Input
                       id="email"
                       type="email"
