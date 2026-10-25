@@ -1,0 +1,45 @@
+{
+  "_comment": "Şifre hash'i bilinçli olarak çıkarıldı (repo public). Geri yüklemede kullanıcı 'şifremi unuttum' ile yeni şifre belirler veya magic link kullanır.",
+  "users": [
+    {
+      "id": "49d14125-8488-468e-9658-e4515a5274c9",
+      "aud": "authenticated",
+      "role": "authenticated",
+      "email": "ferhatatagun2@gmail.com",
+      "email_confirmed_at": "2026-09-21T18:20:15.71033+00:00",
+      "created_at": "2026-09-21T18:20:01.361247+00:00",
+      "updated_at": "2026-09-24T11:37:33.667775+00:00",
+      "last_sign_in_at": "2026-09-24T11:37:33.664063+00:00",
+      "raw_app_meta_data": {
+        "provider": "email",
+        "providers": [
+          "email"
+        ]
+      },
+      "raw_user_meta_data": {
+        "sub": "49d14125-8488-468e-9658-e4515a5274c9",
+        "email": "ferhatatagun2@gmail.com",
+        "email_verified": true,
+        "phone_verified": false
+      }
+    }
+  ],
+  "identities": [
+    {
+      "id": "257cda71-178f-4bcd-9794-092ca6b4d3bf",
+      "provider": "email",
+      "provider_id": "49d14125-8488-468e-9658-e4515a5274c9",
+      "user_id": "49d14125-8488-468e-9658-e4515a5274c9",
+      "email": "ferhatatagun2@gmail.com",
+      "identity_data": {
+        "sub": "49d14125-8488-468e-9658-e4515a5274c9",
+        "email": "ferhatatagun2@gmail.com",
+        "email_verified": true,
+        "phone_verified": false
+      },
+      "created_at": "2026-09-21T18:20:01.375949+00:00",
+      "updated_at": "2026-09-21T18:20:01.375949+00:00",
+      "last_sign_in_at": "2026-09-21T18:20:01.375892+00:00"
+    }
+  ]
+}
