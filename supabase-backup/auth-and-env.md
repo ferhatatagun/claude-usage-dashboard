@@ -16,7 +16,17 @@ Anthropic Admin API anahtarları env'de değil, Supabase Vault'ta tutuluyordu. V
 
 ## Vercel
 - Proje: `claude-usage-dashboard` (`prj_iEiMHTfB3fp1yvxv0M6NtzzF9ue9`), kişisel hesap kapsamı `ferhatatagun2gmailcoms-projects`
-- Yayın adresi: `https://claude-usage-dashboard-six.vercel.app`
+- Yayın adresi: `https://claude-usage-dashboard-six.vercel.app` (tek alan adı, özel domain yok; doğrulanmış)
+- Tanımlı env değişkenleri (2026-10-26, yalnızca ad ve hedef; değerler okunmadı):
+
+| Değişken | production | preview | development |
+|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | ✓ | ✓ | |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | ✓ | ✓ | |
+| `SUPABASE_SECRET_KEY` (sensitive) | ✓ | ✓ | |
+| `NEXT_PUBLIC_SITE_URL` | ✓ | ✓ | |
+| `CRON_SECRET` | ✓ (sensitive) | ✓ (sensitive) | ✓ |
+
 - Cron (`vercel.json`): `GET /api/cron/sync-usage`, her gün `0 6 * * *` (UTC), `Authorization: Bearer $CRON_SECRET`
 
 ## Supabase Auth (dashboard'dan elle alınacak)
@@ -30,7 +40,7 @@ Kodun beklediği yapı:
 Dashboard yolu: Authentication → URL Configuration / Sign In-Providers / Emails (Templates, SMTP Settings).
 
 ### Canlıdan okunamayan, elle doldurulacaklar
-- [ ] Site URL: ______
+- [ ] Site URL (büyük ihtimalle `https://claude-usage-dashboard-six.vercel.app`, doğrulanmadı): ______
 - [ ] Redirect URLs listesi: ______
 - [ ] Özel SMTP kullanılıyor mu? (host, port, kullanıcı, gönderen adı/adresi. **Şifreyi buraya yazma**): ______
 - [ ] "Confirm email" açık mı: ______
